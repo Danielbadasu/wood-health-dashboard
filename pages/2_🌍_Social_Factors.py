@@ -6,7 +6,7 @@ from utils.data_loader import load_latest, load_all_years, get_trend, find_colum
 from utils.sidebar import render_sidebar, fetch_metric, kpi_delta, arrow, diff
 from chatbot_widget import render_ai_banner, render_disclaimer, render_sidebar_chat, CHART_CONFIG, LAYOUT_BASE
 
-st.set_page_config(page_title="🌍 Social Factors", page_icon="🌍", layout="wide")
+st.set_page_config(page_title="🌿 Healthy Living", page_icon="🌿", layout="wide")
 
 st.markdown("""
 <style>
@@ -67,7 +67,7 @@ all_data = load_all_years()
 
 # ---- CENTRALIZED SIDEBAR ----
 selected_year, compare_year, show_ohio, selected_charts = render_sidebar(
-    page_name="🌍 Social Factors",
+    page_name="🌿 Healthy Living",
     all_data=all_data,
     chart_options=[
         "Social Indicators Comparison",
@@ -78,10 +78,10 @@ selected_year, compare_year, show_ohio, selected_charts = render_sidebar(
 )
 
 # ---- METRIC HELPERS ----
-def gm(col, county='Hancock', sheet='additional'):
+def gm(col, county='Wood', sheet='additional'):
     return fetch_metric(all_data, latest, selected_year, col, county, sheet)
 
-def gmc(col, county='Hancock', sheet='additional'):
+def gmc(col, county='Wood', sheet='additional'):
     if compare_year is None: return None
     return fetch_metric(all_data, latest, compare_year, col, county, sheet)
 
@@ -115,33 +115,32 @@ college_c   = gmc('% Some College', sheet='select')
 unemploy_c  = gmc('% Unemployed', sheet='select')
 broadband_c = gmc('% Households with Broadband Access', sheet='select')
 exercise_c  = gmc('% With Access to Exercise Opportunities', sheet='select')
-
 income_c_int = int(income_c) if income_c else None
 
 # ---- HEADER ----
 st.markdown(
-    f"# 🌍 Social Determinants & Built Environment "
+    f"# 🌿 Supports for Healthy Living "
     f"<span class='year-badge'>Showing: {selected_year}</span>",
     unsafe_allow_html=True
 )
 st.markdown('<div class="chip-tag">🏥 CHIP PRIORITY 2</div>', unsafe_allow_html=True)
-st.markdown("Income, housing, education, food security, and community conditions for Hancock County vs Ohio.")
+st.markdown("Income, housing, education, food security, and community conditions for Wood County vs Ohio.")
 
 # ---- HEADLINE INSIGHT ----
 income_diff = income_h_int - income_o_int
 st.markdown(f"""
 <div class="headline-insight">
-    💡 <strong>Key Finding ({selected_year}):</strong> Hancock County households earn a median of
+    💡 <strong>Key Finding ({selected_year}):</strong> Wood County households earn a median of
     <strong>${income_h_int:,}</strong> — ${abs(income_diff):,}
     {'above' if income_diff > 0 else 'below'} the Ohio average of ${income_o_int:,}.
-    Children in poverty stand at just <strong>{poverty_h}%</strong> vs {poverty_o}% statewide.
+    Children in poverty stand at <strong>{poverty_h}%</strong> vs {poverty_o}% statewide.
     However, <strong>{food_h}%</strong> of residents face food insecurity and only
     <strong>{exercise_h}%</strong> have access to exercise opportunities vs {exercise_o}% for Ohio
     — key gaps the CHIP Priority 2 targets.
 </div>
 """, unsafe_allow_html=True)
 
-render_ai_banner("Social Determinants & Built Environment")
+render_ai_banner("Supports for Healthy Living")
 
 # ---- KPI ROW 1 ----
 st.markdown('<div class="section-title">Key Indicators</div>', unsafe_allow_html=True)
@@ -158,7 +157,7 @@ st.markdown(f"""
         <div class="kpi-icon">👶</div>
         <div class="kpi-label">Children in Poverty</div>
         <div class="kpi-value">{poverty_h}%</div>
-        <div class="kpi-sub">Ohio: {poverty_o}% · {arrow(poverty_h, poverty_o)} {diff(poverty_h, poverty_o)}% better than state</div>
+        <div class="kpi-sub">Ohio: {poverty_o}% · {arrow(poverty_h, poverty_o)} {diff(poverty_h, poverty_o)}% vs state</div>
         <div class="kpi-delta">{kpi_delta(poverty_h, poverty_c, compare_year=compare_year, lower_is_better=True)}</div>
     </div>
     <div class="kpi-card amber">
@@ -219,7 +218,7 @@ st.markdown("---")
 def make_trend_chart(trend_df, col, color_map, y_label, value_suffix=""):
     df = trend_df[trend_df['year'] <= selected_year].copy()
     if not show_ohio:
-        df = df[df['geography'] == 'Hancock County']
+        df = df[df['geography'] == 'Wood County']
     if df.empty:
         return None
     fig = px.scatter(df, x='year', y=col, color='geography',
@@ -235,25 +234,21 @@ def make_trend_chart(trend_df, col, color_map, y_label, value_suffix=""):
             f'{y_label}: %{{y:.1f}}{value_suffix}'
             '<extra></extra>'
         )
-    fig.update_layout(
-        **LAYOUT_BASE,
-        xaxis=dict(tickformat='d', dtick=1),
-        yaxis=dict(title=y_label),
-    )
+    fig.update_layout(**LAYOUT_BASE, xaxis=dict(tickformat='d', dtick=1), yaxis=dict(title=y_label))
     return fig
 
 # ---- CHART 1: SOCIAL INDICATORS COMPARISON ----
 if "Social Indicators Comparison" in selected_charts:
-    st.markdown(f'<div class="section-title">Social Indicators — Hancock vs Ohio ({selected_year})</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="section-title">Social Indicators — Wood County vs Ohio ({selected_year})</div>', unsafe_allow_html=True)
     compare_df = pd.DataFrame({
         'Indicator': ['Food Insecurity %', 'Severe Housing %', 'Unemployment %', 'Children in Poverty %'],
-        'Hancock County': [food_h, housing_h, unemploy_h, poverty_h],
+        'Wood County': [food_h, housing_h, unemploy_h, poverty_h],
         'Ohio': [food_o, housing_o, unemploy_o, poverty_o]
     })
-    cols_to_show = ['Hancock County', 'Ohio'] if show_ohio else ['Hancock County']
+    cols_to_show = ['Wood County', 'Ohio'] if show_ohio else ['Wood County']
     compare_melted = compare_df[['Indicator'] + cols_to_show].melt(id_vars='Indicator', var_name='Geography', value_name='Value')
     fig1 = px.bar(compare_melted, x='Indicator', y='Value', color='Geography', barmode='group',
-                  color_discrete_map={'Hancock County': '#4ECDC4', 'Ohio': '#ffd200'},
+                  color_discrete_map={'Wood County': '#4ECDC4', 'Ohio': '#ffd200'},
                   labels={'Value': 'Percentage (%)', 'Indicator': ''}, template='plotly_dark')
     fig1.update_traces(hovertemplate='<b>%{x}</b><br>%{fullData.name}: %{y:.1f}%<extra></extra>')
     fig1.update_layout(**LAYOUT_BASE)
@@ -265,7 +260,7 @@ if "Income Trend" in selected_charts:
     col = find_column(all_data['additional'], ['Median Household Income', 'Median Income'])
     if col:
         fig = make_trend_chart(get_trend(all_data['additional'], col), col,
-                               {'Hancock County': '#4ECDC4', 'Ohio': '#ffd200'}, 'Median Income ($)', '')
+                               {'Wood County': '#4ECDC4', 'Ohio': '#ffd200'}, 'Median Income ($)', '')
         if fig:
             fig.update_layout(yaxis=dict(tickprefix='$', tickformat=','))
             st.plotly_chart(fig, use_container_width=True, config=CHART_CONFIG)
@@ -278,7 +273,7 @@ if "Children in Poverty Trend" in selected_charts:
     col = find_column(all_data['select'], ['% Children in Poverty', 'Children in Poverty %'])
     if col:
         fig = make_trend_chart(get_trend(all_data['select'], col), col,
-                               {'Hancock County': '#4ECDC4', 'Ohio': '#ffd200'}, 'Children in Poverty', '%')
+                               {'Wood County': '#4ECDC4', 'Ohio': '#ffd200'}, 'Children in Poverty', '%')
         if fig:
             st.plotly_chart(fig, use_container_width=True, config=CHART_CONFIG)
         else:
@@ -286,19 +281,19 @@ if "Children in Poverty Trend" in selected_charts:
 
 # ---- CHART 4: COMMUNITY CONDITIONS RADAR ----
 if "Community Conditions Radar" in selected_charts:
-    st.markdown(f'<div class="section-title">Community Conditions — Hancock vs Ohio ({selected_year})</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="section-title">Community Conditions — Wood County vs Ohio ({selected_year})</div>', unsafe_allow_html=True)
     categories = ['College Education', 'Broadband Access', 'Exercise Access',
                   'Food Security', 'Employment', 'Housing Quality']
-    hancock_vals = [college_h or 0, broadband_h or 0, exercise_h or 0,
-                    100 - (food_h or 0), 100 - (unemploy_h or 0), 100 - (housing_h or 0)]
-    ohio_vals    = [college_o or 0, broadband_o or 0, exercise_o or 0,
-                    100 - (food_o or 0), 100 - (unemploy_o or 0), 100 - (housing_o or 0)]
+    wood_vals  = [college_h or 0, broadband_h or 0, exercise_h or 0,
+                  100 - (food_h or 0), 100 - (unemploy_h or 0), 100 - (housing_h or 0)]
+    ohio_vals  = [college_o or 0, broadband_o or 0, exercise_o or 0,
+                  100 - (food_o or 0), 100 - (unemploy_o or 0), 100 - (housing_o or 0)]
     fig4 = go.Figure()
     fig4.add_trace(go.Scatterpolar(
-        r=hancock_vals, theta=categories, fill='toself',
-        name='Hancock County', line_color='#4ECDC4',
+        r=wood_vals, theta=categories, fill='toself',
+        name='Wood County', line_color='#4ECDC4',
         fillcolor='rgba(78,205,196,0.2)',
-        hovertemplate='<b>Hancock County</b><br>%{theta}: %{r:.1f}<extra></extra>'
+        hovertemplate='<b>Wood County</b><br>%{theta}: %{r:.1f}<extra></extra>'
     ))
     if show_ohio:
         fig4.add_trace(go.Scatterpolar(
@@ -321,14 +316,14 @@ export_df = pd.DataFrame({
     'Indicator': ['Median Household Income', 'Children in Poverty %', 'Food Insecurity %',
                   'Severe Housing Problems %', 'Some College %', 'Unemployment %',
                   'Broadband Access %', 'Exercise Access %'],
-    'Hancock County': [income_h_int, poverty_h, food_h, housing_h, college_h, unemploy_h, broadband_h, exercise_h],
+    'Wood County': [income_h_int, poverty_h, food_h, housing_h, college_h, unemploy_h, broadband_h, exercise_h],
     'Ohio': [income_o_int, poverty_o, food_o, housing_o, college_o, unemploy_o, broadband_o, exercise_o]
 })
 csv = export_df.to_csv(index=False).encode('utf-8')
-st.download_button(label="📥 Download Social Factors Data as CSV", data=csv,
-                   file_name=f"hancock_social_factors_{selected_year}.csv", mime="text/csv")
+st.download_button(label="📥 Download Healthy Living Data as CSV", data=csv,
+                   file_name=f"wood_healthy_living_{selected_year}.csv", mime="text/csv")
 if st.checkbox("Show raw comparison data"):
     st.dataframe(export_df, use_container_width=True)
 
-render_disclaimer("Social Determinants & Built Environment")
-render_sidebar_chat("Social Determinants & Built Environment")
+render_disclaimer("Supports for Healthy Living")
+render_sidebar_chat("Supports for Healthy Living")

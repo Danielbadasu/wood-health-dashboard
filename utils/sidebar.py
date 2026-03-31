@@ -43,20 +43,25 @@ def render_sidebar(page_name: str, all_data: dict, chart_options: list, default_
     st.sidebar.markdown("---")
 
     page_info = {
-        "🧠 Behavioral Health": {
+        "🧠 Mental Health": {
             "priority": "CHIP Priority 1",
-            "desc": "Behavioral Health & Substance Use",
-            "focus": ["Mental health access", "Substance use & overdose", "Suicide prevention"]
+            "desc": "Mental Health & Substance Use",
+            "focus": ["Mental health access", "Substance use & overdose", "Suicide prevention", "Recovery support"]
         },
-        "🌍 Social Factors": {
+        "🌿 Healthy Living": {
             "priority": "CHIP Priority 2",
-            "desc": "Social Determinants & Built Environment",
-            "focus": ["Income & poverty", "Housing & food security", "Education & employment", "Built environment"]
+            "desc": "Supports for Healthy Living",
+            "focus": ["Nutrition & food access", "Physical activity", "Chronic disease prevention", "Healthcare access"]
         },
-        "💊 Chronic Disease": {
+        "👶 Maternal Health": {
             "priority": "CHIP Priority 3",
-            "desc": "Chronic Disease & Healthy Lifestyle",
-            "focus": ["Obesity & diabetes", "Smoking & inactivity", "Preventive care access"]
+            "desc": "Maternal & Infant Health",
+            "focus": ["Birth outcomes", "Infant mortality", "Prenatal care access", "Maternal wellbeing"]
+        },
+        "🌱 Thriving Communities": {
+            "priority": "CHIP Priority 4",
+            "desc": "Thriving Communities",
+            "focus": ["Social determinants", "Health equity", "Housing & education", "Community resilience"]
         },
         "📊 Health Outcomes": {
             "priority": "Cross-cutting — All CHIP Priorities",
@@ -86,19 +91,19 @@ def render_sidebar(page_name: str, all_data: dict, chart_options: list, default_
     return selected_year, compare_year, show_ohio, selected_charts
 
 
-def fetch_metric(all_data: dict, latest: dict, year: int, col: str, county: str = 'Hancock', sheet: str = 'additional'):
+def fetch_metric(all_data: dict, latest: dict, year: int, col: str, county: str = 'Wood', sheet: str = 'additional'):
     """
     Centralized metric fetcher. Use this in all pages instead of local get_metric().
     """
     from utils.data_loader import get_hancock, get_ohio
     df = all_data[sheet]
     year_df = df[df['year'] == year]
-    if county == 'Hancock':
-        row = year_df[year_df['County'] == 'Hancock']
+    if county == 'Wood':
+        row = year_df[year_df['County'] == 'Wood']
     else:
         row = year_df[(year_df['County'].isna()) & (year_df['State'] == 'Ohio')]
     if row.empty or col not in row.columns:
-        fallback = get_hancock(latest[sheet]) if county == 'Hancock' else get_ohio(latest[sheet])
+        fallback = get_hancock(latest[sheet]) if county == 'Wood' else get_ohio(latest[sheet])
         val = fallback[col] if col in fallback.index else None
         return round(float(val), 1) if val is not None and pd.notna(val) else None
     val = row.iloc[0][col]

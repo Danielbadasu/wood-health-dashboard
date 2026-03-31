@@ -1,5 +1,5 @@
 import streamlit as st
-from chatbot_widget import render_disclaimer, render_sidebar_chat, HANCOCK_CONTEXT, get_groq_client
+from chatbot_widget import render_disclaimer, render_sidebar_chat, WOOD_CONTEXT, get_groq_client
 
 st.set_page_config(page_title="🤖 AI Assistant", page_icon="🤖", layout="wide")
 
@@ -28,16 +28,16 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ---- TITLE ----
-st.markdown("# 🤖 Hancock County Health AI Assistant")
-st.markdown("Ask me anything about Hancock County public health data, the CHIP priorities, or how we compare to Ohio.")
+st.markdown("# 🤖 Wood County Health AI Assistant")
+st.markdown("Ask me anything about Wood County public health data, the CHIP priorities, or how we compare to Ohio.")
 st.markdown("---")
 
 # ---- SIDEBAR ----
 st.sidebar.header("🎯 Topic Filter")
 selected_topic = st.sidebar.radio(
     "Select Topic",
-    options=["All Topics", "🧠 Behavioral Health", "🌍 Social Determinants",
-             "💊 Chronic Disease", "📊 Health Outcomes"],
+    options=["All Topics", "🧠 Mental Health & Substance Use", "🌿 Supports for Healthy Living",
+             "👶 Maternal & Infant Health", "🌱 Thriving Communities"],
     index=0
 )
 st.sidebar.markdown("---")
@@ -46,25 +46,25 @@ st.sidebar.markdown(f"Messages: **{len(st.session_state.get('ai_page_messages', 
 
 # ---- SUGGESTED QUESTIONS ----
 questions = {
-    "🧠 Behavioral Health": [
-        ("🧠 Mental health providers gap?", "Why does Hancock County have fewer mental health providers than the Ohio average and what impact does that have?"),
-        ("💊 Overdose trends?", "How has the drug overdose death rate trended in Hancock County vs Ohio over recent years?"),
-        ("😔 Mental distress rate?", "What does frequent mental distress mean and how does Hancock County compare to Ohio?"),
+    "🧠 Mental Health & Substance Use": [
+        ("🧠 Mental health providers gap?", "Why does Wood County have fewer mental health providers than the Ohio average and what impact does that have?"),
+        ("💊 Overdose trends?", "How has the drug overdose death rate trended in Wood County vs Ohio over recent years?"),
+        ("😔 Mental distress rate?", "What does frequent mental distress mean and how does Wood County compare to Ohio?"),
     ],
-    "🌍 Social Determinants": [
-        ("🏠 Housing situation?", "What is the housing and poverty situation in Hancock County?"),
-        ("🎓 Education & health link?", "How do education levels in Hancock County affect health outcomes?"),
-        ("🍎 Food security?", "What is the food insecurity situation in Hancock County compared to Ohio?"),
+    "🌿 Supports for Healthy Living": [
+        ("🏠 Housing situation?", "What is the housing and poverty situation in Wood County?"),
+        ("🎓 Education & health link?", "How does BGSU's presence affect education levels and health outcomes in Wood County?"),
+        ("🍎 Food security?", "What is the food insecurity situation in Wood County compared to Ohio?"),
     ],
-    "💊 Chronic Disease": [
-        ("⚖️ Obesity rates?", "How does Hancock County's obesity rate compare to Ohio and what are the health implications?"),
-        ("🩺 Diabetes prevalence?", "What is the diabetes prevalence in Hancock County vs Ohio?"),
-        ("🚬 Smoking rates?", "How does adult smoking in Hancock County compare to the state average?"),
+    "👶 Maternal & Infant Health": [
+        ("👶 Infant mortality?", "How does Wood County's infant mortality rate compare to Ohio and what are the implications?"),
+        ("⚖️ Low birth weight?", "What is the low birth weight rate in Wood County vs Ohio?"),
+        ("🩺 Prenatal care access?", "How does access to prenatal care and primary care affect maternal outcomes in Wood County?"),
     ],
-    "📊 Health Outcomes": [
-        ("❤️ Life expectancy?", "Why is Hancock County's life expectancy higher than the Ohio average?"),
-        ("👶 Child health?", "How are children faring in Hancock County compared to Ohio?"),
-        ("🏥 Healthcare access gaps?", "What are the biggest healthcare access gaps in Hancock County?"),
+    "🌱 Thriving Communities": [
+        ("❤️ Life expectancy?", "Why is Wood County's life expectancy higher than the Ohio average?"),
+        ("👶 Child health?", "How are children faring in Wood County compared to Ohio?"),
+        ("🏥 Healthcare access gaps?", "What are the biggest healthcare access gaps in Wood County?"),
     ],
 }
 
@@ -101,14 +101,14 @@ if st.session_state.ai_page_messages:
         else:
             chat_html += f"""
             <div>
-                <div class="assistant-name">🏥 Hancock Health AI</div>
+                <div class="assistant-name">🏥 Wood County Health AI</div>
                 <div class="chat-bubble assistant-bubble">{msg['content']}</div>
             </div>"""
     chat_html += '</div>'
     st.markdown(chat_html, unsafe_allow_html=True)
 
 # ---- CHAT INPUT ----
-user_input = st.chat_input("Ask a public health question about Hancock County...")
+user_input = st.chat_input("Ask a public health question about Wood County...")
 
 if st.session_state.suggested:
     user_input = st.session_state.suggested
@@ -125,10 +125,10 @@ if user_input:
                 {
                     "role": "system",
                     "content": (
-                        HANCOCK_CONTEXT
+                        WOOD_CONTEXT
                         + f"\nThe user is exploring the topic: {selected_topic}. "
                         "Tailor responses to be relevant to this topic. "
-                        "Be insightful, data-driven, and reference CHIP priorities where relevant. "
+                        "Be insightful, data-driven, and reference Wood County CHIP priorities where relevant. "
                         "Keep responses clear and concise — under 150 words unless detail is needed."
                     )
                 }

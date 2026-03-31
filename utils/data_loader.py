@@ -5,9 +5,9 @@ import glob
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), '..', 'data', 'raw')
 
-COUNTY = 'Hancock'
+COUNTY = 'Wood'
 STATE = 'Ohio'
-POPULATION = 74704
+POPULATION = 132_641
 CHIP_YEAR = '2026-2028'
 
 

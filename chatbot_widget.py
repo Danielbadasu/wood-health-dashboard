@@ -2,30 +2,32 @@ import os
 import streamlit as st
 from groq import Groq
 
-HANCOCK_CONTEXT = """
-You are a public health data analyst embedded inside the Hancock County Public Health Dashboard
-for Findlay, Ohio. You have deep expertise in:
+WOOD_CONTEXT = """
+You are a public health data analyst embedded inside the Wood County Public Health Dashboard
+for Bowling Green, Ohio. You have deep expertise in:
 
-- The 2026-2028 Hancock County Community Health Improvement Plan (CHIP)
-- CHIP Priority 1: Behavioral Health & Substance Use
-- CHIP Priority 2: Social Determinants & Built Environment  
-- CHIP Priority 3: Chronic Disease & Healthy Lifestyle
+- The 2026-2028 Wood County Community Health Improvement Plan (CHIP)
+- CHIP Priority 1: Mental Health and Substance Use
+- CHIP Priority 2: Supports for Healthy Living
+- CHIP Priority 3: Maternal and Infant Health
+- CHIP Priority 4: Thriving Communities
 - County Health Rankings data and methodology
-- Hancock County demographics (population: 74,704)
-- How Hancock County compares to Ohio state averages
+- Wood County demographics (population: 132,641)
+- How Wood County compares to Ohio state averages
 
-Key Hancock County facts you know:
-- Life expectancy: 76.1 years (Ohio: 75.2)
-- Drug overdose death rate: 33.8 per 100k (Ohio: 44.7) — better than state
-- Mental health providers: 232 per 100k (Ohio: 349) — 33% fewer than state
-- Primary care physicians: 52 per 100k (Ohio: 75) — 30% fewer than state
-- Children in poverty: 10.8% (Ohio: 17.5%) — much better than state
-- Adult obesity: 37% (Ohio: 38.4%)
-- Frequent mental distress: 18.5% (Ohio: 19.4%)
-- Access to exercise opportunities: 77% (Ohio: 84%) — below state
-- Median household income: $72,065 (Ohio: $67,873)
+Key Wood County facts you know:
+- Home of Bowling Green State University (BGSU)
+- Mix of urban (Bowling Green) and rural communities
+- Borders Lucas County (Toledo metro area)
+- Key health partners: Wood County Health Department, Wood County Hospital, Mercy Health—Perrysburg
+- Life expectancy: 78.5 years (Ohio: 75.2) — better than state
+- Drug overdose death rate: lower than Ohio average
+- Children in poverty: lower than Ohio average
+- Adult obesity: comparable to Ohio average
+- Median household income: higher than Ohio average
+- Wood County is one of Ohio's healthier counties by overall ranking
 
-Be concise, data-driven, and always relate answers back to Hancock County
+Be concise, data-driven, and always relate answers back to Wood County
 and the CHIP priorities where relevant.
 """
 
@@ -115,7 +117,7 @@ def render_ai_banner(page_context: str):
     <div class="ai-banner-wrapper">
         <div class="ai-banner-left">
             <div class="ai-banner-title">Want deeper insights on {page_context}?</div>
-            <div class="ai-banner-sub">Ask our Hancock County Health AI — trained on local CHIP data.</div>
+            <div class="ai-banner-sub">Ask our Wood County Health AI — trained on local CHIP data.</div>
         </div>
         <a class="ai-banner-right" href="/AI_Assistant" target="_self">
             <span class="ai-banner-cta">💬 Ask AI Assistant →</span>
@@ -138,11 +140,11 @@ def render_disclaimer(page_context: str = ""):
             a collaboration between the Robert Wood Johnson Foundation and the University of
             Wisconsin Population Health Institute · 2025 Annual Data Release.
             Health priorities align with the
-            <a href="https://www.hancockph.com/health-assessment-project"
-            target="_blank" style="color:#4ECDC4;">2026–2028 Hancock County Community Health Improvement Plan (CHIP)</a>.
+            <a href="https://woodcountyhealth.org/home/reports-publications/"
+            target="_blank" style="color:#4ECDC4;">2026–2028 Wood County Community Health Improvement Plan (CHIP)</a>.
             This dashboard is intended for <strong>informational purposes only</strong>
             and does not constitute medical or public health advice.
-            Hancock County, Ohio · Population: 74,704.
+            Wood County, Ohio · Population: 132,641.
         </p>
     </div>
     """, unsafe_allow_html=True)
@@ -211,7 +213,7 @@ def render_sidebar_chat(page_context: str):
                         {
                             "role": "system",
                             "content": (
-                                HANCOCK_CONTEXT
+                                WOOD_CONTEXT
                                 + f"\nThe user is currently viewing the {page_context} page. "
                                 "Give concise answers — 2-3 sentences max for sidebar chat."
                             )

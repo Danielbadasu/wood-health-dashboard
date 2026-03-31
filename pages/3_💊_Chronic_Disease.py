@@ -5,321 +5,212 @@ from utils.data_loader import load_latest, load_all_years, get_trend, find_colum
 from utils.sidebar import render_sidebar, fetch_metric, kpi_delta, arrow, diff
 from chatbot_widget import render_ai_banner, render_disclaimer, render_sidebar_chat, CHART_CONFIG, LAYOUT_BASE
 
-st.set_page_config(page_title="💊 Chronic Disease", page_icon="💊", layout="wide")
+st.set_page_config(page_title="👶 Maternal Health", page_icon="👶", layout="wide")
 
 st.markdown("""
 <style>
 .kpi-container { display: flex; gap: 20px; margin-bottom: 30px; }
-.kpi-card {
-    flex: 1; padding: 24px 28px; border-radius: 16px;
-    position: relative; overflow: hidden;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-}
+.kpi-card { flex: 1; padding: 24px 28px; border-radius: 16px; position: relative; overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.4); }
 .kpi-card.orange { background: linear-gradient(135deg, #f7971e, #ffd200); }
 .kpi-card.red    { background: linear-gradient(135deg, #ff416c, #ff4b2b); }
 .kpi-card.green  { background: linear-gradient(135deg, #11998e, #38ef7d); }
 .kpi-card.blue   { background: linear-gradient(135deg, #1a6dff, #4facfe); }
-.kpi-label {
-    font-size: 12px; letter-spacing: 2px; text-transform: uppercase;
-    color: rgba(255,255,255,0.75); margin-bottom: 10px; font-weight: 600;
-}
-.kpi-value {
-    font-size: 36px; font-weight: 800; letter-spacing: -1px;
-    margin-bottom: 6px; color: #ffffff;
-    text-shadow: 0 2px 10px rgba(0,0,0,0.2);
-}
+.kpi-card.purple { background: linear-gradient(135deg, #6a11cb, #a855f7); }
+.kpi-label { font-size: 12px; letter-spacing: 2px; text-transform: uppercase; color: rgba(255,255,255,0.75); margin-bottom: 10px; font-weight: 600; }
+.kpi-value { font-size: 36px; font-weight: 800; letter-spacing: -1px; margin-bottom: 6px; color: #ffffff; text-shadow: 0 2px 10px rgba(0,0,0,0.2); }
 .kpi-sub { font-size: 12px; color: rgba(255,255,255,0.65); }
 .kpi-delta { font-size: 10px; margin-top: 4px; }
 .kpi-icon { position: absolute; top: 18px; right: 20px; font-size: 42px; opacity: 0.25; }
-.chip-tag {
-    display: inline-block; padding: 4px 12px; border-radius: 20px;
-    font-size: 11px; font-weight: 700; letter-spacing: 1px;
-    background: rgba(247,151,30,0.2); color: #ffd200;
-    border: 1px solid rgba(247,151,30,0.4); margin-bottom: 16px;
-}
-.headline-insight {
-    background: linear-gradient(135deg, rgba(247,151,30,0.1), rgba(247,151,30,0.05));
-    border: 1px solid rgba(247,151,30,0.3);
-    border-left: 4px solid #ffd200;
-    border-radius: 12px; padding: 18px 24px; margin-bottom: 28px;
-    font-size: 15px; color: rgba(255,255,255,0.9); line-height: 1.6;
-}
-.section-title {
-    font-size: 13px; font-weight: 700; letter-spacing: 2px;
-    text-transform: uppercase; color: rgba(255,255,255,0.4);
-    margin-bottom: 16px; margin-top: 32px;
-}
-.year-badge {
-    display: inline-block; padding: 3px 10px; border-radius: 12px;
-    font-size: 11px; font-weight: 700;
-    background: rgba(255,210,0,0.2); color: #ffd200;
-    border: 1px solid rgba(255,210,0,0.3);
-    margin-left: 8px; vertical-align: middle;
-}
+.chip-tag { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; letter-spacing: 1px; background: rgba(247,151,30,0.2); color: #ffd200; border: 1px solid rgba(247,151,30,0.4); margin-bottom: 16px; }
+.headline-insight { background: linear-gradient(135deg, rgba(247,151,30,0.1), rgba(247,151,30,0.05)); border: 1px solid rgba(247,151,30,0.3); border-left: 4px solid #ffd200; border-radius: 12px; padding: 18px 24px; margin-bottom: 28px; font-size: 15px; color: rgba(255,255,255,0.9); line-height: 1.6; }
+.section-title { font-size: 13px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: rgba(255,255,255,0.4); margin-bottom: 16px; margin-top: 32px; }
+.year-badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; background: rgba(255,210,0,0.2); color: #ffd200; border: 1px solid rgba(255,210,0,0.3); margin-left: 8px; vertical-align: middle; }
 </style>
 """, unsafe_allow_html=True)
 
-# ---- LOAD DATA ----
 latest   = load_latest()
 all_data = load_all_years()
 
-# ---- CENTRALIZED SIDEBAR ----
 selected_year, compare_year, show_ohio, selected_charts = render_sidebar(
-    page_name="💊 Chronic Disease",
+    page_name="👶 Maternal Health",
     all_data=all_data,
-    chart_options=[
-        "Chronic Disease Comparison",
-        "Obesity Trend",
-        "Diabetes Trend",
-        "Smoking Trend",
-        "PCP Access Trend",
-    ]
+    chart_options=["Maternal & Infant Comparison", "Infant Mortality Trend", "Low Birth Weight Trend", "Prenatal Care Trend"]
 )
 
-# ---- METRIC HELPERS ----
-def gm(col, county='Hancock', sheet='additional'):
+def gm(col, county='Wood', sheet='additional'):
     return fetch_metric(all_data, latest, selected_year, col, county, sheet)
 
-def gmc(col, county='Hancock', sheet='additional'):
+def gmc(col, county='Wood', sheet='additional'):
     if compare_year is None: return None
     return fetch_metric(all_data, latest, compare_year, col, county, sheet)
 
-# ---- METRICS ----
-obesity_h     = gm('% Adults with Obesity')
-obesity_o     = gm('% Adults with Obesity', county='Ohio')
-diabetes_h    = gm('% Adults with Diabetes')
-diabetes_o    = gm('% Adults with Diabetes', county='Ohio')
-smoking_h     = gm('% Adults Reporting Currently Smoking')
-smoking_o     = gm('% Adults Reporting Currently Smoking', county='Ohio')
-inactive_h    = gm('% Physically Inactive')
-inactive_o    = gm('% Physically Inactive', county='Ohio')
-poor_health_h = gm('% Fair or Poor Health', sheet='select')
-poor_health_o = gm('% Fair or Poor Health', county='Ohio', sheet='select')
-phys_days_h   = gm('Average Number of Physically Unhealthy Days', sheet='select')
-phys_days_o   = gm('Average Number of Physically Unhealthy Days', county='Ohio', sheet='select')
-uninsured_h   = gm('% Uninsured', sheet='select')
-uninsured_o   = gm('% Uninsured', county='Ohio', sheet='select')
-pcp_h_raw     = gm('Primary Care Physicians Rate', sheet='select')
-pcp_o_raw     = gm('Primary Care Physicians Rate', county='Ohio', sheet='select')
-pcp_h         = round(pcp_h_raw) if pcp_h_raw else 0
-pcp_o         = round(pcp_o_raw) if pcp_o_raw else 0
+infant_h     = gm('Infant Mortality Rate')
+infant_o     = gm('Infant Mortality Rate', county='Ohio')
+lbw_h        = gm('% Low Birth Weight', sheet='select')
+lbw_o        = gm('% Low Birth Weight', county='Ohio', sheet='select')
+child_mort_h = gm('Child Mortality Rate')
+child_mort_o = gm('Child Mortality Rate', county='Ohio')
+life_exp_h   = gm('Life Expectancy')
+life_exp_o   = gm('Life Expectancy', county='Ohio')
+uninsured_h  = gm('% Uninsured', sheet='select')
+uninsured_o  = gm('% Uninsured', county='Ohio', sheet='select')
+pcp_h_raw    = gm('Primary Care Physicians Rate', sheet='select')
+pcp_o_raw    = gm('Primary Care Physicians Rate', county='Ohio', sheet='select')
+pcp_h        = round(pcp_h_raw) if pcp_h_raw else 0
+pcp_o        = round(pcp_o_raw) if pcp_o_raw else 0
 
-# ---- COMPARE METRICS ----
-obesity_c     = gmc('% Adults with Obesity')
-diabetes_c    = gmc('% Adults with Diabetes')
-smoking_c     = gmc('% Adults Reporting Currently Smoking')
-inactive_c    = gmc('% Physically Inactive')
-poor_health_c = gmc('% Fair or Poor Health', sheet='select')
-phys_days_c   = gmc('Average Number of Physically Unhealthy Days', sheet='select')
-uninsured_c   = gmc('% Uninsured', sheet='select')
-pcp_c_raw     = gmc('Primary Care Physicians Rate', sheet='select')
-pcp_c         = round(pcp_c_raw) if pcp_c_raw else None
+infant_c     = gmc('Infant Mortality Rate')
+lbw_c        = gmc('% Low Birth Weight', sheet='select')
+child_mort_c = gmc('Child Mortality Rate')
+life_exp_c   = gmc('Life Expectancy')
 
-# ---- HEADER ----
-st.markdown(
-    f"# 💊 Chronic Disease & Healthy Lifestyle "
-    f"<span class='year-badge'>Showing: {selected_year}</span>",
-    unsafe_allow_html=True
-)
+st.markdown(f"# 👶 Maternal & Infant Health <span class='year-badge'>Showing: {selected_year}</span>", unsafe_allow_html=True)
 st.markdown('<div class="chip-tag">🏥 CHIP PRIORITY 3</div>', unsafe_allow_html=True)
-st.markdown("Obesity, diabetes, smoking, physical inactivity, and healthcare access for Hancock County vs Ohio.")
+st.markdown("Birth outcomes, infant mortality, prenatal care, and child health for Wood County vs Ohio.")
 
-# ---- HEADLINE INSIGHT ----
 st.markdown(f"""
 <div class="headline-insight">
-    💡 <strong>Key Finding ({selected_year}):</strong> Hancock County's chronic disease profile
-    closely mirrors Ohio — obesity at <strong>{obesity_h}%</strong> (Ohio: {obesity_o}%) and
-    diabetes at <strong>{diabetes_h}%</strong> (Ohio: {diabetes_o}%). The most actionable gap
-    is physical inactivity at <strong>{inactive_h}%</strong> and only
-    <strong>{pcp_h} primary care physicians per 100k</strong> vs {pcp_o} statewide —
-    access to preventive care is where CHIP Priority 3 can make the biggest difference.
+    💡 <strong>Key Finding ({selected_year}):</strong> Wood County's infant mortality rate is
+    <strong>{infant_h} per 1,000 live births</strong> vs Ohio's {infant_o}.
+    Low birth weight stands at <strong>{lbw_h}%</strong> vs {lbw_o}% statewide.
+    Life expectancy is <strong>{life_exp_h} years</strong> vs {life_exp_o} for Ohio overall.
+    These maternal and infant outcomes are central to CHIP Priority 3.
 </div>
 """, unsafe_allow_html=True)
 
-render_ai_banner("Chronic Disease & Healthy Lifestyle")
+render_ai_banner("Maternal & Infant Health")
 
-# ---- KPI ROW 1 ----
 st.markdown('<div class="section-title">Key Indicators</div>', unsafe_allow_html=True)
 st.markdown(f"""
 <div class="kpi-container">
     <div class="kpi-card orange">
+        <div class="kpi-icon">👶</div>
+        <div class="kpi-label">Infant Mortality Rate</div>
+        <div class="kpi-value">{infant_h}</div>
+        <div class="kpi-sub">Per 1,000 live births · Ohio: {infant_o} · {arrow(infant_h, infant_o)} {diff(infant_h, infant_o)} vs state</div>
+        <div class="kpi-delta">{kpi_delta(infant_h, infant_c, compare_year=compare_year, lower_is_better=True)}</div>
+    </div>
+    <div class="kpi-card red">
         <div class="kpi-icon">⚖️</div>
-        <div class="kpi-label">Adult Obesity</div>
-        <div class="kpi-value">{obesity_h}%</div>
-        <div class="kpi-sub">Ohio: {obesity_o}% · {arrow(obesity_h, obesity_o)} {diff(obesity_h, obesity_o)}% vs state</div>
-        <div class="kpi-delta">{kpi_delta(obesity_h, obesity_c, compare_year=compare_year, lower_is_better=True)}</div>
+        <div class="kpi-label">Low Birth Weight</div>
+        <div class="kpi-value">{lbw_h}%</div>
+        <div class="kpi-sub">Ohio: {lbw_o}% · {arrow(lbw_h, lbw_o)} {diff(lbw_h, lbw_o)}% vs state</div>
+        <div class="kpi-delta">{kpi_delta(lbw_h, lbw_c, compare_year=compare_year, lower_is_better=True)}</div>
     </div>
-    <div class="kpi-card red">
-        <div class="kpi-icon">🩺</div>
-        <div class="kpi-label">Diabetes Prevalence</div>
-        <div class="kpi-value">{diabetes_h}%</div>
-        <div class="kpi-sub">Ohio: {diabetes_o}% · {arrow(diabetes_h, diabetes_o)} {diff(diabetes_h, diabetes_o)}% vs state</div>
-        <div class="kpi-delta">{kpi_delta(diabetes_h, diabetes_c, compare_year=compare_year, lower_is_better=True)}</div>
+    <div class="kpi-card blue">
+        <div class="kpi-icon">🧒</div>
+        <div class="kpi-label">Child Mortality Rate</div>
+        <div class="kpi-value">{child_mort_h}</div>
+        <div class="kpi-sub">Per 100k · Ohio: {child_mort_o} · {arrow(child_mort_h, child_mort_o)} {diff(child_mort_h, child_mort_o)} vs state</div>
+        <div class="kpi-delta">{kpi_delta(child_mort_h, child_mort_c, compare_year=compare_year, lower_is_better=True)}</div>
     </div>
-    <div class="kpi-card red">
-        <div class="kpi-icon">🚬</div>
-        <div class="kpi-label">Adult Smoking</div>
-        <div class="kpi-value">{smoking_h}%</div>
-        <div class="kpi-sub">Ohio: {smoking_o}% · {arrow(smoking_h, smoking_o)} {diff(smoking_h, smoking_o)}% vs state</div>
-        <div class="kpi-delta">{kpi_delta(smoking_h, smoking_c, compare_year=compare_year, lower_is_better=True)}</div>
-    </div>
-    <div class="kpi-card orange">
-        <div class="kpi-icon">🛋️</div>
-        <div class="kpi-label">Physical Inactivity</div>
-        <div class="kpi-value">{inactive_h}%</div>
-        <div class="kpi-sub">Ohio: {inactive_o}% · {arrow(inactive_h, inactive_o)} {diff(inactive_h, inactive_o)}% vs state</div>
-        <div class="kpi-delta">{kpi_delta(inactive_h, inactive_c, compare_year=compare_year, lower_is_better=True)}</div>
+    <div class="kpi-card green">
+        <div class="kpi-icon">❤️</div>
+        <div class="kpi-label">Life Expectancy</div>
+        <div class="kpi-value">{life_exp_h} yrs</div>
+        <div class="kpi-sub">Ohio: {life_exp_o} yrs · {arrow(life_exp_h, life_exp_o, lower_is_better=False)} {diff(life_exp_h, life_exp_o)} vs state</div>
+        <div class="kpi-delta">{kpi_delta(life_exp_h, life_exp_c, compare_year=compare_year, lower_is_better=False)}</div>
     </div>
 </div>
 """, unsafe_allow_html=True)
 
-# ---- KPI ROW 2 ----
 st.markdown('<div class="section-title"> </div>', unsafe_allow_html=True)
 st.markdown(f"""
 <div class="kpi-container">
-    <div class="kpi-card blue">
-        <div class="kpi-icon">😷</div>
-        <div class="kpi-label">Fair or Poor Health</div>
-        <div class="kpi-value">{poor_health_h}%</div>
-        <div class="kpi-sub">Ohio: {poor_health_o}% · {arrow(poor_health_h, poor_health_o)} {diff(poor_health_h, poor_health_o)}% vs state</div>
-        <div class="kpi-delta">{kpi_delta(poor_health_h, poor_health_c, compare_year=compare_year, lower_is_better=True)}</div>
-    </div>
-    <div class="kpi-card blue">
-        <div class="kpi-icon">📅</div>
-        <div class="kpi-label">Physically Unhealthy Days</div>
-        <div class="kpi-value">{phys_days_h}</div>
-        <div class="kpi-sub">Days/month · Ohio: {phys_days_o}</div>
-        <div class="kpi-delta">{kpi_delta(phys_days_h, phys_days_c, compare_year=compare_year, lower_is_better=True)}</div>
-    </div>
-    <div class="kpi-card green">
-        <div class="kpi-icon">🏥</div>
+    <div class="kpi-card purple">
+        <div class="kpi-icon">🩺</div>
         <div class="kpi-label">Primary Care Physicians</div>
         <div class="kpi-value">{pcp_h}</div>
         <div class="kpi-sub">Per 100k · Ohio: {pcp_o} · {pcp_o - pcp_h} fewer than state</div>
-        <div class="kpi-delta">{kpi_delta(pcp_h, pcp_c, compare_year=compare_year, lower_is_better=False)}</div>
     </div>
-    <div class="kpi-card green">
+    <div class="kpi-card blue">
         <div class="kpi-icon">💳</div>
         <div class="kpi-label">Uninsured Rate</div>
         <div class="kpi-value">{uninsured_h}%</div>
         <div class="kpi-sub">Ohio: {uninsured_o}% · {arrow(uninsured_h, uninsured_o)} {diff(uninsured_h, uninsured_o)}% vs state</div>
-        <div class="kpi-delta">{kpi_delta(uninsured_h, uninsured_c, compare_year=compare_year, lower_is_better=True)}</div>
     </div>
 </div>
 """, unsafe_allow_html=True)
 
 st.markdown("---")
 
-# ---- TREND CHART HELPER ----
 def make_trend_chart(trend_df, col, color_map, y_label, value_suffix=""):
     df = trend_df[trend_df['year'] <= selected_year].copy()
     if not show_ohio:
-        df = df[df['geography'] == 'Hancock County']
+        df = df[df['geography'] == 'Wood County']
     if df.empty:
         return None
-    n_years = df['year'].nunique()
     fig = px.scatter(df, x='year', y=col, color='geography',
                      color_discrete_map=color_map, template='plotly_dark')
     for trace in fig.data:
         geo_data = df[df['geography'] == trace.name]
         trace.mode = 'lines+markers' if len(geo_data) > 1 else 'markers'
         trace.line = dict(width=3)
-        trace.marker = dict(size=9 if len(geo_data) > 1 else 14)
-        trace.hovertemplate = (
-            '<b>%{fullData.name}</b><br>'
-            'Year: %{x}<br>'
-            f'{y_label}: %{{y:.1f}}{value_suffix}'
-            '<extra></extra>'
-        )
-    fig.update_layout(
-        **LAYOUT_BASE,
-        xaxis=dict(tickformat='d', dtick=1),
-        yaxis=dict(title=y_label),
-    )
-    return fig, n_years
+        trace.marker = dict(size=9)
+        trace.hovertemplate = '<b>%{fullData.name}</b><br>Year: %{x}<br>' + f'{y_label}: %{{y:.1f}}{value_suffix}<extra></extra>'
+    fig.update_layout(**LAYOUT_BASE, xaxis=dict(tickformat='d', dtick=1), yaxis=dict(title=y_label))
+    return fig
 
-# ---- CHART 1: COMPARISON BAR ----
-if "Chronic Disease Comparison" in selected_charts:
-    st.markdown(f'<div class="section-title">Chronic Disease Rates — Hancock vs Ohio ({selected_year})</div>', unsafe_allow_html=True)
-    bar_data = pd.DataFrame({
-        'Indicator': ['Obesity %', 'Diabetes %', 'Smoking %', 'Physical Inactivity %', 'Fair/Poor Health %'],
-        'Hancock County': [obesity_h, diabetes_h, smoking_h, inactive_h, poor_health_h],
-        'Ohio': [obesity_o, diabetes_o, smoking_o, inactive_o, poor_health_o]
+if "Maternal & Infant Comparison" in selected_charts:
+    st.markdown(f'<div class="section-title">Maternal & Infant Indicators — Wood County vs Ohio ({selected_year})</div>', unsafe_allow_html=True)
+    compare_df = pd.DataFrame({
+        'Indicator': ['Infant Mortality Rate', 'Low Birth Weight %', 'Child Mortality Rate'],
+        'Wood County': [infant_h, lbw_h, child_mort_h],
+        'Ohio': [infant_o, lbw_o, child_mort_o]
     })
-    cols_to_melt = ['Hancock County', 'Ohio'] if show_ohio else ['Hancock County']
-    bar_melted = bar_data[['Indicator'] + cols_to_melt].melt(id_vars='Indicator', var_name='Geography', value_name='Value')
-    fig1 = px.bar(bar_melted, x='Indicator', y='Value', color='Geography', barmode='group',
-                  color_discrete_map={'Hancock County': '#ffd200', 'Ohio': '#4ECDC4'},
-                  labels={'Value': 'Percentage (%)', 'Indicator': ''}, template='plotly_dark')
-    fig1.update_traces(hovertemplate='<b>%{x}</b><br>%{fullData.name}: %{y:.1f}%<extra></extra>')
+    cols_to_show = ['Wood County', 'Ohio'] if show_ohio else ['Wood County']
+    melted = compare_df[['Indicator'] + cols_to_show].melt(id_vars='Indicator', var_name='Geography', value_name='Value')
+    fig1 = px.bar(melted, x='Indicator', y='Value', color='Geography', barmode='group',
+                  color_discrete_map={'Wood County': '#ffd200', 'Ohio': '#4ECDC4'},
+                  labels={'Value': 'Rate / %', 'Indicator': ''}, template='plotly_dark')
+    fig1.update_traces(hovertemplate='<b>%{x}</b><br>%{fullData.name}: %{y:.1f}<extra></extra>')
     fig1.update_layout(**LAYOUT_BASE)
     st.plotly_chart(fig1, use_container_width=True, config=CHART_CONFIG)
 
-# ---- CHART 2: OBESITY TREND ----
-if "Obesity Trend" in selected_charts:
-    st.markdown('<div class="section-title">Adult Obesity — Trend Up To Selected Year</div>', unsafe_allow_html=True)
-    col = find_column(all_data['additional'], ['% Adults with Obesity', '% Obese', 'Adult Obesity Rate'])
+if "Infant Mortality Trend" in selected_charts:
+    st.markdown('<div class="section-title">Infant Mortality — Trend Up To Selected Year</div>', unsafe_allow_html=True)
+    col = find_column(all_data['additional'], ['Infant Mortality Rate'])
     if col:
-        result = make_trend_chart(get_trend(all_data['additional'], col), col,
-                                  {'Hancock County': '#ffd200', 'Ohio': '#4ECDC4'}, 'Adults with Obesity', '%')
-        if result:
-            fig, _ = result
+        fig = make_trend_chart(get_trend(all_data['additional'], col), col,
+                               {'Wood County': '#ffd200', 'Ohio': '#4ECDC4'}, 'Infant Mortality Rate', '')
+        if fig:
             st.plotly_chart(fig, use_container_width=True, config=CHART_CONFIG)
         else:
-            st.info("No obesity data available.")
+            st.info("No infant mortality data available.")
 
-# ---- CHART 3: DIABETES TREND ----
-if "Diabetes Trend" in selected_charts:
-    st.markdown('<div class="section-title">Diabetes Prevalence — Trend Up To Selected Year</div>', unsafe_allow_html=True)
-    col = find_column(all_data['additional'], ['% Adults with Diabetes', '% Diabetic', 'Diabetes Rate'])
+if "Low Birth Weight Trend" in selected_charts:
+    st.markdown('<div class="section-title">Low Birth Weight — Trend Up To Selected Year</div>', unsafe_allow_html=True)
+    col = find_column(all_data['select'], ['% Low Birth Weight'])
     if col:
-        result = make_trend_chart(get_trend(all_data['additional'], col), col,
-                                  {'Hancock County': '#ffd200', 'Ohio': '#4ECDC4'}, 'Adults with Diabetes', '%')
-        if result:
-            fig, _ = result
+        fig = make_trend_chart(get_trend(all_data['select'], col), col,
+                               {'Wood County': '#ffd200', 'Ohio': '#4ECDC4'}, 'Low Birth Weight', '%')
+        if fig:
             st.plotly_chart(fig, use_container_width=True, config=CHART_CONFIG)
         else:
-            st.info("No diabetes data available.")
+            st.info("No low birth weight data available.")
 
-# ---- CHART 4: SMOKING TREND ----
-if "Smoking Trend" in selected_charts:
-    st.markdown('<div class="section-title">Adult Smoking — Trend Up To Selected Year</div>', unsafe_allow_html=True)
-    col = find_column(all_data['additional'], ['% Adults Reporting Currently Smoking', '% Smokers', 'Adult Smoking Rate'])
-    if col:
-        result = make_trend_chart(get_trend(all_data['additional'], col), col,
-                                  {'Hancock County': '#ffd200', 'Ohio': '#4ECDC4'}, 'Adults Smoking', '%')
-        if result:
-            fig, n_years = result
-            if n_years <= 1:
-                st.info("ℹ️ Only one year of smoking data available. Showing as data point.")
-            st.plotly_chart(fig, use_container_width=True, config=CHART_CONFIG)
-
-# ---- CHART 5: PCP TREND ----
-if "PCP Access Trend" in selected_charts:
-    st.markdown('<div class="section-title">Primary Care Physician Access — Trend Up To Selected Year</div>', unsafe_allow_html=True)
+if "Prenatal Care Trend" in selected_charts:
+    st.markdown('<div class="section-title">Primary Care Access — Trend Up To Selected Year</div>', unsafe_allow_html=True)
     col = find_column(all_data['select'], ['Primary Care Physicians Rate', 'Primary Care Physician Rate'])
     if col:
-        result = make_trend_chart(get_trend(all_data['select'], col), col,
-                                  {'Hancock County': '#38ef7d', 'Ohio': '#4ECDC4'}, 'Physicians per 100k', '')
-        if result:
-            fig, _ = result
+        fig = make_trend_chart(get_trend(all_data['select'], col), col,
+                               {'Wood County': '#38ef7d', 'Ohio': '#4ECDC4'}, 'Physicians per 100k', '')
+        if fig:
             st.plotly_chart(fig, use_container_width=True, config=CHART_CONFIG)
         else:
             st.info("No PCP data available.")
 
-# ---- DOWNLOAD ----
 st.markdown("---")
 export_df = pd.DataFrame({
-    'Indicator': ['Adult Obesity %', 'Diabetes %', 'Adult Smoking %', 'Physical Inactivity %',
-                  'Fair/Poor Health %', 'Physically Unhealthy Days', 'Primary Care Physicians per 100k', 'Uninsured %'],
-    'Hancock County': [obesity_h, diabetes_h, smoking_h, inactive_h, poor_health_h, phys_days_h, pcp_h, uninsured_h],
-    'Ohio': [obesity_o, diabetes_o, smoking_o, inactive_o, poor_health_o, phys_days_o, pcp_o, uninsured_o]
+    'Indicator': ['Infant Mortality Rate', 'Low Birth Weight %', 'Child Mortality Rate', 'Life Expectancy', 'PCP per 100k', 'Uninsured %'],
+    'Wood County': [infant_h, lbw_h, child_mort_h, life_exp_h, pcp_h, uninsured_h],
+    'Ohio': [infant_o, lbw_o, child_mort_o, life_exp_o, pcp_o, uninsured_o]
 })
 csv = export_df.to_csv(index=False).encode('utf-8')
-st.download_button(label="📥 Download Chronic Disease Data as CSV", data=csv,
-                   file_name=f"hancock_chronic_disease_{selected_year}.csv", mime="text/csv")
+st.download_button(label="📥 Download Maternal Health Data as CSV", data=csv,
+                   file_name=f"wood_maternal_health_{selected_year}.csv", mime="text/csv")
 if st.checkbox("Show raw comparison data"):
     st.dataframe(export_df, use_container_width=True)
 
-render_disclaimer("Chronic Disease & Healthy Lifestyle")
-render_sidebar_chat("Chronic Disease & Healthy Lifestyle")
+render_disclaimer("Maternal & Infant Health")
+render_sidebar_chat("Maternal & Infant Health")

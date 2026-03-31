@@ -5,7 +5,7 @@ from utils.data_loader import load_latest, load_all_years, get_trend, find_colum
 from utils.sidebar import render_sidebar, fetch_metric, kpi_delta, arrow, diff
 from chatbot_widget import render_ai_banner, render_disclaimer, render_sidebar_chat, CHART_CONFIG, LAYOUT_BASE
 
-st.set_page_config(page_title="🧠 Behavioral Health", page_icon="🧠", layout="wide")
+st.set_page_config(page_title="🧠 Mental Health", page_icon="🧠", layout="wide")
 
 st.markdown("""
 <style>
@@ -65,7 +65,7 @@ all_data = load_all_years()
 
 # ---- CENTRALIZED SIDEBAR ----
 selected_year, compare_year, show_ohio, selected_charts = render_sidebar(
-    page_name="🧠 Behavioral Health",
+    page_name="🧠 Mental Health",
     all_data=all_data,
     chart_options=[
         "Mental Health Indicators Comparison",
@@ -76,10 +76,10 @@ selected_year, compare_year, show_ohio, selected_charts = render_sidebar(
 )
 
 # ---- METRIC HELPERS ----
-def gm(col, county='Hancock', sheet='additional'):
+def gm(col, county='Wood', sheet='additional'):
     return fetch_metric(all_data, latest, selected_year, col, county, sheet)
 
-def gmc(col, county='Hancock', sheet='additional'):
+def gmc(col, county='Wood', sheet='additional'):
     if compare_year is None: return None
     return fetch_metric(all_data, latest, compare_year, col, county, sheet)
 
@@ -109,26 +109,25 @@ mh_prov_c_int = round(mh_prov_c) if mh_prov_c else None
 
 # ---- HEADER ----
 st.markdown(
-    f"# 🧠 Behavioral Health & Substance Use "
+    f"# 🧠 Mental Health & Substance Use "
     f"<span class='year-badge'>Showing: {selected_year}</span>",
     unsafe_allow_html=True
 )
 st.markdown('<div class="chip-tag">🏥 CHIP PRIORITY 1</div>', unsafe_allow_html=True)
-st.markdown("Mental health, substance use, and suicide trends for Hancock County vs Ohio.")
+st.markdown("Mental health, substance use, and suicide trends for Wood County vs Ohio.")
 
 # ---- HEADLINE INSIGHT ----
 st.markdown(f"""
 <div class="headline-insight">
-    💡 <strong>Key Finding ({selected_year}):</strong> Hancock County's drug overdose death rate of
-    <strong>{overdose_h} per 100k</strong> is {diff(overdose_h, overdose_o)} points below the
-    Ohio average of {overdose_o} — a meaningful advantage. However, the county has only
-    <strong>{mh_prov_h_int} mental health providers per 100k</strong> residents vs
-    {mh_prov_o_int} statewide, leaving significant gaps in access to care precisely where
-    CHIP Priority 1 focuses.
+    💡 <strong>Key Finding ({selected_year}):</strong> Wood County's drug overdose death rate of
+    <strong>{overdose_h} per 100k</strong> is {diff(overdose_h, overdose_o)} points
+    {'below' if overdose_h < overdose_o else 'above'} the Ohio average of {overdose_o}.
+    The county has <strong>{mh_prov_h_int} mental health providers per 100k</strong> residents vs
+    {mh_prov_o_int} statewide — addressing this gap is central to CHIP Priority 1.
 </div>
 """, unsafe_allow_html=True)
 
-render_ai_banner("Behavioral Health & Substance Use")
+render_ai_banner("Mental Health & Substance Use")
 
 # ---- KPI CARDS ----
 st.markdown('<div class="section-title">Key Indicators</div>', unsafe_allow_html=True)
@@ -145,7 +144,7 @@ st.markdown(f"""
         <div class="kpi-icon">💊</div>
         <div class="kpi-label">Drug Overdose Deaths</div>
         <div class="kpi-value">{overdose_h}</div>
-        <div class="kpi-sub">Per 100k · Ohio: {overdose_o} · {diff(overdose_h, overdose_o)} better than state</div>
+        <div class="kpi-sub">Per 100k · Ohio: {overdose_o} · {diff(overdose_h, overdose_o)} vs state</div>
         <div class="kpi-delta">{kpi_delta(overdose_h, overdose_c, compare_year=compare_year, lower_is_better=True)}</div>
     </div>
     <div class="kpi-card blue">
@@ -171,7 +170,7 @@ st.markdown("---")
 def make_trend_chart(trend_df, col, color_map, y_label, value_suffix=""):
     df = trend_df[trend_df['year'] <= selected_year].copy()
     if not show_ohio:
-        df = df[df['geography'] == 'Hancock County']
+        df = df[df['geography'] == 'Wood County']
     if df.empty:
         return None
     fig = px.scatter(df, x='year', y=col, color='geography',
@@ -196,16 +195,16 @@ def make_trend_chart(trend_df, col, color_map, y_label, value_suffix=""):
 
 # ---- CHART 1: COMPARISON BAR ----
 if "Mental Health Indicators Comparison" in selected_charts:
-    st.markdown(f'<div class="section-title">Mental Health Indicators — Hancock vs Ohio ({selected_year})</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="section-title">Mental Health Indicators — Wood County vs Ohio ({selected_year})</div>', unsafe_allow_html=True)
     compare_df = pd.DataFrame({
         'Indicator': ['Mentally Unhealthy Days', 'Frequent Mental Distress %', 'Excessive Drinking %', 'Suicide Rate (per 100k)'],
-        'Hancock County': [mh_days_h, distress_h, drinking_h, suicide_h],
+        'Wood County': [mh_days_h, distress_h, drinking_h, suicide_h],
         'Ohio': [mh_days_o, distress_o, drinking_o, suicide_o]
     })
-    cols_to_show = ['Hancock County', 'Ohio'] if show_ohio else ['Hancock County']
+    cols_to_show = ['Wood County', 'Ohio'] if show_ohio else ['Wood County']
     compare_melted = compare_df[['Indicator'] + cols_to_show].melt(id_vars='Indicator', var_name='Geography', value_name='Value')
     fig1 = px.bar(compare_melted, x='Indicator', y='Value', color='Geography', barmode='group',
-                  color_discrete_map={'Hancock County': '#a855f7', 'Ohio': '#4ECDC4'},
+                  color_discrete_map={'Wood County': '#a855f7', 'Ohio': '#4ECDC4'},
                   labels={'Value': 'Rate / %', 'Indicator': ''}, template='plotly_dark')
     fig1.update_traces(hovertemplate='<b>%{x}</b><br>%{fullData.name}: %{y:.1f}<extra></extra>')
     fig1.update_layout(**LAYOUT_BASE)
@@ -217,7 +216,7 @@ if "Drug Overdose Trend" in selected_charts:
     col = find_column(all_data['additional'], ['Drug Overdose Mortality Rate', 'Drug Overdose Death Rate'])
     if col:
         fig = make_trend_chart(get_trend(all_data['additional'], col), col,
-                               {'Hancock County': '#a855f7', 'Ohio': '#4ECDC4'}, 'Deaths per 100k', '')
+                               {'Wood County': '#a855f7', 'Ohio': '#4ECDC4'}, 'Deaths per 100k', '')
         if fig:
             st.plotly_chart(fig, use_container_width=True, config=CHART_CONFIG)
         else:
@@ -229,7 +228,7 @@ if "Mental Health Provider Trend" in selected_charts:
     col = find_column(all_data['select'], ['Mental Health Provider Rate', 'Mental Health Providers Rate'])
     if col:
         fig = make_trend_chart(get_trend(all_data['select'], col), col,
-                               {'Hancock County': '#a855f7', 'Ohio': '#4ECDC4'}, 'Providers per 100k', '')
+                               {'Wood County': '#a855f7', 'Ohio': '#4ECDC4'}, 'Providers per 100k', '')
         if fig:
             st.plotly_chart(fig, use_container_width=True, config=CHART_CONFIG)
         else:
@@ -241,7 +240,7 @@ if "Suicide Rate Trend" in selected_charts:
     col = find_column(all_data['additional'], ['Suicide Rate (Age-Adjusted)', 'Suicide Rate'])
     if col:
         fig = make_trend_chart(get_trend(all_data['additional'], col), col,
-                               {'Hancock County': '#ff416c', 'Ohio': '#4ECDC4'}, 'Rate per 100k (age-adj)', '')
+                               {'Wood County': '#ff416c', 'Ohio': '#4ECDC4'}, 'Rate per 100k (age-adj)', '')
         if fig:
             st.plotly_chart(fig, use_container_width=True, config=CHART_CONFIG)
         else:
@@ -252,14 +251,14 @@ st.markdown("---")
 export_df = pd.DataFrame({
     'Indicator': ['Drug Overdose Rate', 'Suicide Rate', 'Mental Health Providers',
                   'Mentally Unhealthy Days', 'Frequent Mental Distress %', 'Excessive Drinking %'],
-    'Hancock County': [overdose_h, suicide_h, mh_prov_h_int, mh_days_h, distress_h, drinking_h],
+    'Wood County': [overdose_h, suicide_h, mh_prov_h_int, mh_days_h, distress_h, drinking_h],
     'Ohio': [overdose_o, suicide_o, mh_prov_o_int, mh_days_o, distress_o, drinking_o]
 })
 csv = export_df.to_csv(index=False).encode('utf-8')
-st.download_button(label="📥 Download Behavioral Health Data as CSV", data=csv,
-                   file_name=f"hancock_behavioral_health_{selected_year}.csv", mime="text/csv")
+st.download_button(label="📥 Download Mental Health Data as CSV", data=csv,
+                   file_name=f"wood_mental_health_{selected_year}.csv", mime="text/csv")
 if st.checkbox("Show raw comparison data"):
     st.dataframe(export_df, use_container_width=True)
 
-render_disclaimer("Behavioral Health & Substance Use")
-render_sidebar_chat("Behavioral Health & Substance Use")
+render_disclaimer("Mental Health & Substance Use")
+render_sidebar_chat("Mental Health & Substance Use")
